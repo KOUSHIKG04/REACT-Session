@@ -1,5 +1,5 @@
 import config from "../config/config.js";
-import { Client, Account } from "appwrite";
+import { Client, Account, ID } from "appwrite";
 
 export class AuthService {
   client = new Client();
@@ -21,7 +21,6 @@ export class AuthService {
       );
       if (userAcc) {
         return this.login({ email, password });
-      } else {
       }
     } catch (error) {
       throw new Error(error);
@@ -30,7 +29,8 @@ export class AuthService {
 
   async login({ email, password }) {
     try {
-      return await this.account.createSession(email, password);
+      const session = await this.account.createSession(email, password);
+      return session;
     } catch (error) {
       throw new Error(error);
     }
@@ -38,10 +38,14 @@ export class AuthService {
 
   async getCurrentUser() {
     try {
-      return await this.account.get();
+      const user = await this.account.get();
+      return user;
     } catch (error) {
-      console.log("appwrite error :: getCurrentUser() :: ", error);
-      throw new Error(error);
+      console.error("Error in getCurrentUser:", error);
+      if (error.code === 401) {
+        return null;
+      }
+      throw error;
     }
   }
 
@@ -56,8 +60,6 @@ export class AuthService {
 
 const authService = new AuthService();
 export default authService;
-
-
 
 /** 
 * The code below is the same as the code above. Which is repeatable 

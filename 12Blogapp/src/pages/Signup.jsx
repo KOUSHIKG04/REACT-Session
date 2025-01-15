@@ -1,98 +1,88 @@
-import React from 'react'
+import React, { useState } from "react";
+import authService from "@/appwrite/auth";
+import { Link, useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useForm } from "react-hook-form";
+import { useDispatch } from "react-redux";
+import { login } from "@/store/authSlice";
 
 const Signup = () => {
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
+  const { register, handleSubmit } = useForm();
+  const dispatch = useDispatch();
+
+  const create = async (data) => {
+    setError("");
+    try {
+      const userData = await authService.createAccount(data);
+      if (userData) {
+        const currentUser = await authService.getCurrentUser();
+        if (currentUser) {
+          dispatch(login({ userData: currentUser }));
+        }
+        navigate("/");
+      }
+    } catch (error) {
+      setError(error.message);
+    }
+  };
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen   py-8 px-4">
-      <div className="w-full max-w-sm bg-white  rounded-xl p-8">
-        <h1 className="text-2xl font-bold text-gray-800 text-center mb-8">
-          {loading ? "Processing" : "CREATE ACCOUNT"}
-        </h1>
-
-        <div className="mb-4">
-          <Label
-            htmlFor="username"
-            className="block text-gray-700 font-medium mb-1"
-          >
-            Username
-          </Label>
-          <Input
-            type="text"
-            id="username"
-            className="w-full p-2 border border-gray-300 rounded-lg 
-            focus:outline-none "
-            onChange={(e) =>
-              setUser({
-                ...user,
-                username: e.target.value,
-              })
-            }
-            value={user.username}
-          />
+    <div
+      className="flex items-center justify-center  bg-gray-50"
+      style={{ minHeight: "calc(90vh - 4rem)" }}
+    >
+      <div className="mx-auto w-full max-w-sm rounded-xl  ">
+        <div className="mb-6 flex justify-center">
+          {/* <span className="inline-block w-full max-w-[100px]">
+            <Logo width="100%" />
+          </span> */}
         </div>
+        <h2 className="text-center text-2xl font-bold text-gray-800">
+          SIGN UP TO CREATE AN ACCOUNT
+        </h2>
 
-        <div className="mb-4">
-          <Label
-            htmlFor="email"
-            className="block text-gray-700 font-medium mb-1"
-          >
-            Email
-          </Label>
-          <Input
-            id="email"
-            type="email"
-            className="w-full p-2 border border-gray-300 rounded-lg
-            focus:outline-none"
-            value={user.email}
-            onChange={(e) =>
-              setUser({
-                ...user,
-                email: e.target.value,
-              })
-            }
-          />
-        </div>
+        {error && <p className="text-red-500 mt-4 text-center">{error}</p>}
+        <form onSubmit={handleSubmit(create)} className="mt-6 space-y-5">
+          <div>
+            <Input
+              id="name"
+              {...register("name", { required: true })}
+              placeholder="ENTER YOUR NAME"
+            />
+          </div>
+          <div>
+            <Input
+              id="email"
+              {...register("email", { required: true })}
+              type="email"
+              placeholder="ENTER YOUR EMAIL"
+            />
+          </div>
+          <div>
+            <Input
+              id="password"
+              {...register("password", { required: true })}
+              type="password"
+              placeholder="ENTER PASSWORD"
+            />
+          </div>
+          <Button type="submit" className="w-full text-white bg-gray-800">
+            SIGN UP
+          </Button>
 
-        <div className="mb-6">
-          <Label
-            htmlFor="password"
-            className="block text-gray-700 font-medium mb-1"
-          >
-            Password
-          </Label>
-          <Input
-            id="password"
-            type="password"
-            className="w-full p-2 border border-gray-300 rounded-lg 
-            focus:outline-none"
-            value={user.password}
-            onChange={(e) =>
-              setUser({
-                ...user,
-                password: e.target.value,
-              })
-            }
-          />
-        </div>
-
-        <Button
-       
-          className="w-full text-white p-2 rounded-lg  transition-colors"
-        >
-          {buttonDisabled ? "PLEASE FILL ALL FIELDS " : "SIGN UP"}
-        </Button>
-
-        <p className="text-gray-600 text-center mt-4">
-          Already have an account ?{" "}
-          <Link
-            href="/login"
-            className="text-blue-500 hover:underline font-medium text-sm"
-          >
-            LOGIN HERE
-          </Link>
-        </p>
+          <p className="mt-2 text-center text-sm text-gray-600">
+            Already have an account?&nbsp;
+            <Link to="/login" className="font-medium text-gray-500 underline">
+              LOGIN HERE
+            </Link>
+          </p>
+        </form>
       </div>
     </div>
   );
-}
+};
 
-export default Signup
+export default Signup;

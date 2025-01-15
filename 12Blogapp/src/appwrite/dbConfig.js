@@ -1,5 +1,6 @@
 import config from "../config/config.js";
 import { Client, Databases, Storage, Query, ID } from "appwrite";
+import authService from "./auth.js";
 
 export class Service {
   client = new Client();
@@ -27,6 +28,10 @@ export class Service {
 
   async getPosts(queries = [Query.equal("status", "active")]) {
     try {
+      const currentUser = await authService.getCurrentUser();
+      if (!currentUser) {
+        throw new Error("User is not authenticated");
+      }
       return await this.databases.listDocuments(
         config.appwriteDatabaseId,
         config.appwriteCollectionId,
@@ -119,5 +124,5 @@ export class Service {
   }
 }
 
-const Service = new Service();
-export default Service;
+const AppService = new Service();
+export default AppService;
